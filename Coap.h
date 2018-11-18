@@ -33,6 +33,9 @@ private:
     callback    responseCallback; /* 요청 응답시 호출될 콜백함수. */
     int         port; /* 통신에 사용할 포트. */
     
+    // 콜백 메소드를 실행하여 성공 여부를 반환합니다.
+    bool        launchCallback(CoapPacket& packet, IPAddress ip, int port);
+
     /**********************************************************************
      * sendPacket 오버로드 그룹
      *
@@ -40,12 +43,6 @@ private:
      **********************************************************************/
     uint16_t    sendPacket(CoapPacket &packet, IPAddress ip);
     uint16_t    sendPacket(CoapPacket &packet, IPAddress ip, int port);
-    
-
-    int         parseOption(CoapOption *option,
-                            uint16_t *running_delta,
-                            uint8_t **buf,
-                            size_t buflen);
     
 public:
     Coap(UDP& udp);

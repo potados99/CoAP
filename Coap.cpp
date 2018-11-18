@@ -97,10 +97,10 @@ uint16_t Coap::send(IPAddress ip,
                     uint8_t tokenlen,
                     uint8_t *payload,
                     uint32_t payloadlen) {
-
+    
     // 패킷 만들기
     CoapPacket packet(ip, port, url, type, method, token, tokenlen, payload, payloadlen);
-
+    
     // 패킷 보내기
     return this->sendPacket(packet, ip, port); /* 반환값은 message id */
 }
@@ -166,7 +166,7 @@ uint16_t Coap::sendResponse(IPAddress ip,
     
     // 패킷 만들기
     CoapPacket packet(ip, port, messageid, payload, payloadlen, code, type, token, tokenlen);
-
+    
     // 패킷 보내기
     return this->sendPacket(packet, ip, port); /* 반환값은 message id */
 }
@@ -174,82 +174,85 @@ uint16_t Coap::sendResponse(IPAddress ip,
 //
 bool Coap::loop() {
     
+    // 수신 데이터 저장할 버퍼 ** 계속 살아있어야 한다!!.
     uint8_t buffer[BUF_MAX_SIZE];
+    
+    // 가져올 패킷 크기를 미리 알아냄. BUF_MAX_SIZE보다 작아야 할 것으로 추정
     int32_t packetlen = udp->parsePacket();
     
+    // 가져올 것이 있는 경우에만 반복!
     while (packetlen > 0) {
+        // 비우기는 기본.
+        memset(buffer, 0, sizeof(buffer));
+        
+        // 제대로 읽어서 버퍼에다가 넣는데, 가져올 것이 버퍼 사이즈보다 크면 BUF_MAX_SIZE로 잘라버림
         packetlen = udp->read(buffer, packetlen >= BUF_MAX_SIZE ? BUF_MAX_SIZE : packetlen);
         
+        // 가져온 버퍼를 패킷에다가 넣을 것이므로 패킷 생성.
         CoapPacket packet;
         
-        // parse coap packet header
-        if (packetlen < COAP_HEADER_SIZE || (((buffer[0] & 0xC0) >> 6) != 1)) {
-            packetlen = udp->parsePacket();
-            continue;
-        }
+        // 파싱 고
+        bool success = CoapPacket::parsePacket(packet, buffer, packetlen);
+        if (! success) { return false; }
+     
+        /****************************************************************
+         * 정상적으로 파싱 완료
+         ****************************************************************/
         
-        packet.type = (buffer[0] & 0x30) >> 4;
-        packet.tokenlen = buffer[0] & 0x0F;
-        packet.code = buffer[1];
-        packet.messageid = 0xFF00 & (buffer[2] << 8);
-        packet.messageid |= 0x00FF & buffer[3];
-        
-        if (packet.tokenlen == 0)  packet.token = NULL;
-        else if (packet.tokenlen <= 8)  packet.token = buffer + 4;
-        else {
-            packetlen = udp->parsePacket();
-            continue;
-        }
-        
-        // parse packet options/payload
-        if (COAP_HEADER_SIZE + packet.tokenlen < packetlen) {
-            int optionIndex = 0;
-            uint16_t delta = 0;
-            uint8_t *end = buffer + packetlen;
-            uint8_t *p = buffer + COAP_HEADER_SIZE + packet.tokenlen;
-            while(optionIndex < MAX_OPTION_NUM && *p != 0xFF && p < end) {
-                packet.options[optionIndex];
-                if (0 != parseOption(&packet.options[optionIndex], &delta, &p, end-p))
-                    return false;
-                optionIndex++;
-            }
-            packet.optionnum = optionIndex;
-            
-            if (p+1 < end && *p == 0xFF) {
-                packet.payload = p+1;
-                packet.payloadlen = end-(p+1);
-            } else {
-                packet.payload = NULL;
-                packet.payloadlen= 0;
-            }
-        }
+        // 요청 타입에 따라 처리
         
         if (packet.type == COAP_ACK) {
-            // call response function
-            responseCallback(packet, udp->remoteIP(), udp->remotePort());
-            
-        } else {
-            
+            // 만약 ACK가 날아오면 콜백을 실행
+            launchCallback(packet, udp->remoteIP(), udp->remotePort());
+        }
+        else {
+            // 패킷 타입이 CON | NONCON | RESET 일 때
             String url = "";
-            // call endpoint url function
+
             for (int i = 0; i < packet.optionnum; i++) {
+                // 옵션을 하나씩 뒤지면서
                 if (packet.options[i].number == COAP_URI_PATH && packet.options[i].length > 0) {
+                    // 옵션이 URI_PATH이고 그 옵션 길이가 0보다 클 때
+                    // 그 옵션 길이보다 1 큰 배열을 만들어줌.
                     char urlname[packet.options[i].length + 1];
+                    
+                    // 그 크기만큼 옵션 버퍼에서 배열로 복사해줌.
                     memcpy(urlname, packet.options[i].buffer, packet.options[i].length);
+                    
+                    // 마지막은 NULL terminate 시켜줌.
                     urlname[packet.options[i].length] = NULL;
-                    if(url.length() > 0)
+                    
+                    // 찾은 url이 처음이면 넘어가고, 다음부터는 / 붙인다.
+                    if(url.length() > 0) {
                         url += "/";
+                    }
+                    
+                    // url에 붙여준다.
                     url += urlname;
                 }
             }
             
-            if (!uri.find(url)) {
-                sendResponse(udp->remoteIP(), udp->remotePort(), packet.messageid, NULL, 0,
-                             COAP_NOT_FOUNT, COAP_NONE, NULL, 0);
-            } else {
-                uri.find(url)(packet, udp->remoteIP(), udp->remotePort());
+            // 그 url로 리소스를 찾아보았는데 안 나오면
+            if (! uri.find(url)) {
+                // 응답을 보낸다. COAP_NOT_FOUND라고.
+                sendResponse(udp->remoteIP(),
+                             udp->remotePort(),
+                             packet.messageid,
+                             NULL,
+                             0,
+                             COAP_NOT_FOUND,
+                             COAP_NONE,
+                             NULL,
+                             0);
+                
             }
-        }
+            else {
+                // 나오면? 콜백을 실행한다.
+                callback foundCallback = uri.find(url);
+                foundCallback(packet, udp->remoteIP(), udp->remotePort());
+            } /* 리소스 찾는 if 끝 */
+            
+        } /* 패킷 타입이 CON | NONCON | RESET 인 if 끝 */
         
         /* this type check did not use.
          if (packet.type == COAP_CON) {
@@ -258,10 +261,11 @@ bool Coap::loop() {
          }
          */
         
-        // next packet
+        // 다음 패킷으로 가즈아
         packetlen = udp->parsePacket();
     }
     
+    // 가져올 것이 없을 때!
     return true;
 }
 
@@ -269,6 +273,15 @@ bool Coap::loop() {
 /****************************************************************
  * private 메소드
  ***************************************************************/
+
+// 완성
+bool Coap::launchCallback(CoapPacket& packet, IPAddress ip, int port) {
+    if (responseCallback) {
+        responseCallback(packet, ip, port);
+        return true;
+    }
+    return false;
+}
 
 // 완성
 uint16_t Coap::sendPacket(CoapPacket &packet, IPAddress ip) {
@@ -289,47 +302,4 @@ uint16_t Coap::sendPacket(CoapPacket &packet, IPAddress ip, int port) {
     return packet.messageid;
 }
 
-int Coap::parseOption(CoapOption *option, uint16_t *running_delta, uint8_t **buf, size_t buflen) {
-    uint8_t *p = *buf;
-    uint8_t headlen = 1;
-    uint16_t len, delta;
-    
-    if (buflen < headlen) return -1;
-    
-    delta = (p[0] & 0xF0) >> 4;
-    len = p[0] & 0x0F;
-    
-    if (delta == 13) {
-        headlen++;
-        if (buflen < headlen) return -1;
-        delta = p[1] + 13;
-        p++;
-    } else if (delta == 14) {
-        headlen += 2;
-        if (buflen < headlen) return -1;
-        delta = ((p[1] << 8) | p[2]) + 269;
-        p+=2;
-    } else if (delta == 15) return -1;
-    
-    if (len == 13) {
-        headlen++;
-        if (buflen < headlen) return -1;
-        len = p[1] + 13;
-        p++;
-    } else if (len == 14) {
-        headlen += 2;
-        if (buflen < headlen) return -1;
-        len = ((p[1] << 8) | p[2]) + 269;
-        p+=2;
-    } else if (len == 15)
-        return -1;
-    
-    if ((p + 1 + len) > (*buf + buflen))  return -1;
-    option->number = delta + *running_delta;
-    option->buffer = p+1;
-    option->length = len;
-    *buf = p + 1 + len;
-    *running_delta += delta;
-    
-    return 0;
-}
+
