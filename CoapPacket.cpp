@@ -9,6 +9,9 @@
 #include "CoapPacket.h"
 
 // 완성
+CoapPacket::CoapPacket() { }
+
+// 완성
 CoapPacket::CoapPacket(IPAddress ip,
                        int port,
                        char *url,
