@@ -21,100 +21,50 @@
  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+/****************************************************************
+ * Coap internal function call tree:
+ 
+ loop()
+    |
+    packetRecievedBehavior(CoapPacket &packet)
+        |
+        [User defined callback]
+ 
+ ****************************************************************/
+
 #ifndef Coap_h
 #define Coap_h
 
 #include "CoapUri.h"
 
 class Coap {
-private:
-    UDP         *udp; /* 통신에 사용할 udp 객체의 포인터. UDP를 구현한 WiFiUdp 사용하면 됨. */
-    CoapUri     uri; /* 리소스를 저장할 CoapUri 객체. */
-    callback    responseCallback; /* 요청 응답시 호출될 콜백함수. */
-    int         port; /* 통신에 사용할 포트. */
+protected:
+    UDP             *udp; /* udp communication */
+    CoapUri         uri; /* store resources */
+    int             port; /* udp port */
     
-    // 콜백 메소드를 실행하여 성공 여부를 반환합니다.
-    bool        launchCallback(CoapPacket& packet, IPAddress ip, int port);
-
-    /**********************************************************************
-     * sendPacket 오버로드 그룹
-     *
-     * 패킷을 지정한 ip와 포트로 보냅니다. 반환값은 message id입니다.
-     **********************************************************************/
-    uint16_t    sendPacket(CoapPacket &packet, IPAddress ip);
-    uint16_t    sendPacket(CoapPacket &packet, IPAddress ip, int port);
+    /****************************************************************
+     * Send a packet to specific host.
+     ****************************************************************/
+    uint16_t        sendPacket(CoapPacket &packet, IPAddress ip, int port = COAP_DEFAULT_PORT);
+    
+    /****************************************************************
+     * Define a behavior when a complete packet arrives.
+     ****************************************************************/
+    virtual void    packetRecievedBehavior(CoapPacket &packet) = 0;
     
 public:
-    Coap(UDP& udp);
+    Coap(UDP &udp);
     
-    bool        start();
-    bool        start(int port);
+    /****************************************************************
+     * Start udp communication.
+     ****************************************************************/
+    void            start(int port = COAP_DEFAULT_PORT);
     
-    // 콜백을 등록합니다.
-    bool        response(callback c);
-    
-    // 리소스와 해당 콜백을 등록합니다.
-    bool        server(callback c, String url);
-    
-    // get 메소드 요청을 보냅니다. 반환값은 message id입니다.
-    uint16_t    get(IPAddress ip,
-                    int port,
-                    char *url);
-    
-    /**********************************************************************
-     * put 오버로드 그룹
-     *
-     * put 메소드 요청을 보냅니다. 반환값은 message id입니다.
-     **********************************************************************/
-    uint16_t    put(IPAddress ip,
-                    int port,
-                    char *url,
-                    char *payload);
-    uint16_t    put(IPAddress ip,
-                    int port,
-                    char *url,
-                    char *payload,
-                    int payloadlen);
-    
-    // 패킷을 만들어서 보냅니다. 반환값은 message id입니다. 패킷을 보낼 때 반드시 호출됩니다.
-    uint16_t    send(IPAddress ip,
-                     int port,
-                     char *url,
-                     COAP_TYPE type,
-                     COAP_METHOD method,
-                     uint8_t *token,
-                     uint8_t tokenlen,
-                     uint8_t *payload,
-                     uint32_t payloadlen);
-    
-    /**********************************************************************
-     * sendResponse 오버로드 그룹
-     *
-     * 응답을 보냅니다. 반환값은 message id입니다.
-     **********************************************************************/
-    uint16_t    sendResponse(IPAddress ip,
-                             int port,
-                             uint16_t messageid);
-    uint16_t    sendResponse(IPAddress ip,
-                             int port,
-                             uint16_t messageid,
-                             char *payload);
-    uint16_t    sendResponse(IPAddress ip,
-                             int port,
-                             uint16_t messageid,
-                             char *payload,
-                             int payloadlen);
-    uint16_t    sendResponse(IPAddress ip,
-                             int port,
-                             uint16_t messageid,
-                             char *payload,
-                             int payloadlen,
-                             COAP_RESPONSE_CODE code,
-                             COAP_CONTENT_TYPE type,
-                             uint8_t *token,
-                             int tokenlen);
-    
-    bool        loop();
+    /****************************************************************
+     * Define repeated tasks.
+     ****************************************************************/
+    bool            loop();
 };
 
 #endif /* Coap_h */

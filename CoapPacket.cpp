@@ -8,12 +8,20 @@
 
 #include "CoapPacket.h"
 
-// 완성
-CoapPacket::CoapPacket() { }
+CoapPacket::CoapPacket() {
+    type = 0;
+    code = 0;
+    token = NULL;
+    tokenlen = 0;
+    payload = NULL;
+    payloadlen = 0;
+    messageid = 0;
+    optionnum = 0;
+    
+    memset(options, 0, MAX_OPTION_NUM);
+}
 
-// 완성
-CoapPacket::CoapPacket(IPAddress ip,
-                       int port,
+CoapPacket::CoapPacket(IPAddress senderIP,
                        char *url,
                        COAP_TYPE type,
                        COAP_METHOD method,
@@ -21,11 +29,7 @@ CoapPacket::CoapPacket(IPAddress ip,
                        uint8_t tokenlen,
                        uint8_t *payload,
                        uint32_t payloadlen) {
-    /*
-     패킷을 만듭니다.
-     */
-    
-    // 멤버 초기화
+
     this->type         = type;
     this->code         = method;
     this->token        = token;
@@ -37,18 +41,18 @@ CoapPacket::CoapPacket(IPAddress ip,
     
     // 호스트(발신자) 옵션 추가
     String ipaddress = "";
-    ipaddress += String(ip[0]);
+    ipaddress += String(senderIP[0]);
     ipaddress += String(".");
-    ipaddress += String(ip[1]);
+    ipaddress += String(senderIP[1]);
     ipaddress += String(".");
-    ipaddress += String(ip[2]);
+    ipaddress += String(senderIP[2]);
     ipaddress += String(".");
-    ipaddress += String(ip[3]);
+    ipaddress += String(senderIP[3]);
     
     this->options[this->optionnum].buffer = (uint8_t *)ipaddress.c_str();
     this->options[this->optionnum].length = ipaddress.length();
     this->options[this->optionnum].number = COAP_URI_HOST;
-    this->optionnum++;
+    this->optionnum ++;
     
     // URI 옵션 추가
     int idx = 0;
@@ -57,7 +61,7 @@ CoapPacket::CoapPacket(IPAddress ip,
             this->options[this->optionnum].buffer = (uint8_t *)(url + idx);
             this->options[this->optionnum].length = i - idx;
             this->options[this->optionnum].number = COAP_URI_PATH;
-            this->optionnum++;
+            this->optionnum ++;
             idx = i + 1;
         }
     }
@@ -66,18 +70,16 @@ CoapPacket::CoapPacket(IPAddress ip,
         this->options[this->optionnum].buffer = (uint8_t *)(url + idx);
         this->options[this->optionnum].length = strlen(url) - idx;
         this->options[this->optionnum].number = COAP_URI_PATH;
-        this->optionnum++;
+        this->optionnum ++;
     }
 }
 
 // 완성
-CoapPacket::CoapPacket(IPAddress ip,
-                       int port,
-                       uint16_t messageid,
+CoapPacket::CoapPacket(uint16_t messageid,
                        char *payload,
                        int payloadlen,
                        COAP_RESPONSE_CODE code,
-                       COAP_CONTENT_TYPE type,
+                       COAP_CONTENT_TYPE contentType,
                        uint8_t *token,
                        int tokenlen) {
     /*
@@ -101,7 +103,7 @@ CoapPacket::CoapPacket(IPAddress ip,
     this->options[this->optionnum].buffer = (uint8_t *)optionBuffer;
     this->options[this->optionnum].length = 2;
     this->options[this->optionnum].number = COAP_CONTENT_FORMAT;
-    this->optionnum++;
+    this->optionnum ++;
 }
 
 // 완성
@@ -184,7 +186,7 @@ uint16_t CoapPacket::exportToBuffer(uint8_t *destBuffer, uint32_t bufferLen) {
 }
 
 
-bool CoapPacket::parsePacket(CoapPacket &packet, uint8_t *buffer, uint32_t packetlen) {
+bool CoapPacket::parseCoapPacket(CoapPacket &packet, uint8_t *buffer, uint32_t packetlen) {
     // 기초 예외처리. 패킷이 헤더보다 작을 때
     if (packetlen < COAP_HEADER_SIZE) {
         return false;

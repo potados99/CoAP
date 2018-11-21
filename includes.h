@@ -56,6 +56,7 @@ typedef enum {
 } COAP_TYPE;
 
 typedef enum {
+    COAP_EMPTY = 0,
     COAP_GET = 1,
     COAP_POST = 2,
     COAP_PUT = 3,
@@ -63,6 +64,7 @@ typedef enum {
 } COAP_METHOD;
 
 typedef enum {
+    COAP_EMPTY_MESSAGE = 0,
     COAP_CREATED = RESPONSE_CODE(2, 1),
     COAP_DELETED = RESPONSE_CODE(2, 2),
     COAP_VALID = RESPONSE_CODE(2, 3),
@@ -91,6 +93,7 @@ typedef enum {
     COAP_URI_HOST = 3,
     COAP_E_TAG = 4,
     COAP_IF_NONE_MATCH = 5,
+    COAP_OBSERVE = 6,
     COAP_URI_PORT = 7,
     COAP_LOCATION_PATH = 8,
     COAP_URI_PATH = 11,

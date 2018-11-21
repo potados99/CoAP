@@ -36,8 +36,7 @@ public:
     CoapPacket();
     
     // 인자들로부터 패킷을 생성합니다.
-    CoapPacket(IPAddress ip,
-               int port,
+    CoapPacket(IPAddress senderIp,
                char *url,
                COAP_TYPE type,
                COAP_METHOD method,
@@ -45,24 +44,12 @@ public:
                uint8_t tokenlen,
                uint8_t *payload,
                uint32_t payloadlen);
-    
-    // 인자들로부터 패킷을 생성합니다. (답장용)
-    CoapPacket(IPAddress ip,
-               int port,
-               uint16_t messageid,
-               char *payload,
-               int payloadlen,
-               COAP_RESPONSE_CODE code,
-               COAP_CONTENT_TYPE type,
-               uint8_t *token,
-               int tokenlen);
-    
 
     // 패킷의 내용들을 통신용 버퍼에 전달합니다. 반환값은 패킷의 크기입니다.
     uint16_t        exportToBuffer(uint8_t *destBuffer, uint32_t bufferLen);
     
     // 버퍼로부터 패킷을 파싱합니다.
-    static bool     parsePacket(CoapPacket &packet, uint8_t *buffer, uint32_t packetLen);
+    static bool     parseCoapPacket(CoapPacket &packet, uint8_t *buffer, uint32_t packetLen);
 };
 
 #endif /* CoapPacket_h */
