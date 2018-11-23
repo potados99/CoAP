@@ -12,9 +12,12 @@ Coap::Coap(UDP& udp) {
 
 void Coap::start(int port) {
     this->udp->begin(port);
+    this->started = true;
 }
 
 bool Coap::loop() {
+    if (! started) { return false; }
+    
     uint8_t     buffer[BUF_MAX_SIZE];   /* buffer to store udp packet */
     CoapPacket  packet;                 /* coap packet */
     int32_t     packetSize;             /* udp packet size */
@@ -37,8 +40,10 @@ bool Coap::loop() {
     
     return true;                                            /* nothing to parse */
 }
+
+
 /****************************************************************
- * private 메소드
+ * private
  ***************************************************************/
 
 // 완성

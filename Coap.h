@@ -41,7 +41,7 @@ class Coap {
 protected:
     UDP             *udp; /* udp communication */
     CoapUri         uri; /* store resources */
-    int             port; /* udp port */
+    bool            started = false;
     
     /****************************************************************
      * Send a packet to specific host.

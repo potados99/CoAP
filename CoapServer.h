@@ -15,6 +15,16 @@ class CoapServer : public Coap {
 private:
     virtual void    packetRecievedBehavior(CoapPacket &packet);
 
+    /****************************************************************
+     * Send a response that says the resource requested doesn't exist
+     ****************************************************************/
+    uint16_t        sendResourceNotFoundResponse(CoapPacket &request, IPAddress ip, int port);
+    
+    /****************************************************************
+     * Send an empty response
+     ****************************************************************/
+    uint16_t        sendEmptyResponse(CoapPacket &request, IPAddress ip, int port);
+    
 public:
     CoapServer(UDP &udp);
     
@@ -26,7 +36,7 @@ public:
     /****************************************************************
      * Send a response.
      ****************************************************************/
-    uint16_t        sendResponse(CoapPacket &request, IPAddress ip, int port, char *payload);
+    uint16_t        sendResponse(CoapPacket &request, IPAddress ip, int port, char *payload = NULL);
 };
 
 #endif /* CoapServer_h */

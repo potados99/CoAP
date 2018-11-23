@@ -8,6 +8,10 @@
 
 #include "CoapPacket.h"
 
+/****************************************************************
+ * public
+ ****************************************************************/
+
 CoapPacket::CoapPacket() {
     type = 0;
     code = 0;
@@ -72,38 +76,6 @@ CoapPacket::CoapPacket(IPAddress senderIP,
         this->options[this->optionnum].number = COAP_URI_PATH;
         this->optionnum ++;
     }
-}
-
-// 완성
-CoapPacket::CoapPacket(uint16_t messageid,
-                       char *payload,
-                       int payloadlen,
-                       COAP_RESPONSE_CODE code,
-                       COAP_CONTENT_TYPE contentType,
-                       uint8_t *token,
-                       int tokenlen) {
-    /*
-     답장용 패킷을 만듭니다.
-     */
-    
-    // 멤버 초기화
-    this->type = COAP_ACK;
-    this->code = code;
-    this->token = token;
-    this->tokenlen = tokenlen;
-    this->payload = (uint8_t *)payload;
-    this->payloadlen = payloadlen;
-    this->optionnum = 0;
-    this->messageid = messageid;
-    
-    // 옵션 추가
-    char optionBuffer[2];
-    optionBuffer[0] = ((uint16_t)type & 0xFF00) >> 8;
-    optionBuffer[1] = ((uint16_t)type & 0x00FF) ;
-    this->options[this->optionnum].buffer = (uint8_t *)optionBuffer;
-    this->options[this->optionnum].length = 2;
-    this->options[this->optionnum].number = COAP_CONTENT_FORMAT;
-    this->optionnum ++;
 }
 
 // 완성
@@ -186,6 +158,59 @@ uint16_t CoapPacket::exportToBuffer(uint8_t *destBuffer, uint32_t bufferLen) {
 }
 
 
+CoapPacket CoapPacket::makeResponsePair(COAP_TYPE type, COAP_RESPONSE_CODE responseCode, uint8_t *responseOptionBuffer) {
+    CoapPacket response;
+    
+    response.version = this->version;
+    response.type = type;
+    response.code = responseCode;
+    
+    response.token = this->token;
+    response.tokenlen = this->tokenlen;
+    response.messageid = this->messageid;
+    
+    if (responseOptionBuffer) {
+        responseOptionBuffer[0] = ((uint16_t)COAP_TEXT_PLAIN  & 0xFF00) >> 8;
+        responseOptionBuffer[1] = ((uint16_t)COAP_TEXT_PLAIN  & 0x00FF) ;
+        response.options[response.optionnum].buffer = responseOptionBuffer;
+        response.options[response.optionnum].length = 2;
+        response.options[response.optionnum].number = COAP_CONTENT_FORMAT;
+        response.optionnum ++;
+    }
+    
+    return response;
+}
+
+
+String CoapPacket::getUriPath() {
+    String url = "";
+    
+    for (int i = 0; i < this->optionnum; i++) {
+        // 옵션을 하나씩 뒤지면서
+        if (this->options[i].number == COAP_URI_PATH && this->options[i].length > 0) {
+            // 옵션이 URI_PATH이고 그 옵션 길이가 0보다 클 때
+            // 그 옵션 길이보다 1 큰 배열을 만들어줌.
+            char urlname[this->options[i].length + 1];
+            
+            // 그 크기만큼 옵션 버퍼에서 배열로 복사해줌.
+            memcpy(urlname, this->options[i].buffer, this->options[i].length);
+            
+            // 마지막은 NULL terminate 시켜줌.
+            urlname[this->options[i].length] = NULL;
+            
+            // 찾은 url이 처음이면 넘어가고, 다음부터는 / 붙인다.
+            if(url.length() > 0) {
+                url += "/";
+            }
+            
+            // url에 붙여준다.
+            url += urlname;
+        }
+    }
+    
+    return url;
+}
+
 bool CoapPacket::parseCoapPacket(CoapPacket &packet, uint8_t *buffer, uint32_t packetlen) {
     // 기초 예외처리. 패킷이 헤더보다 작을 때
     if (packetlen < COAP_HEADER_SIZE) {
@@ -242,7 +267,7 @@ bool CoapPacket::parseCoapPacket(CoapPacket &packet, uint8_t *buffer, uint32_t p
         //packet.options[optionIndex];
         
         // 옵션을 파싱하는데 리턴이 0이 아니면
-        if (parseOption(&packet.options[optionIndex], &delta, &p, end-p) != 0) {
+        if (parseCoapOptions(&packet.options[optionIndex], &delta, &p, end-p) != 0) {
             // 가망이 없어 그냥 리턴시킨다.
             return false;
         }
@@ -270,11 +295,16 @@ bool CoapPacket::parseCoapPacket(CoapPacket &packet, uint8_t *buffer, uint32_t p
         packet.payload = NULL;
         packet.payloadlen= 0;
     }
-
+    
     return true;
 }
 
-int CoapPacket::parseOption(CoapOption *option, uint16_t *running_delta, uint8_t **buf, size_t buflen) {
+
+/****************************************************************
+ * private
+ ****************************************************************/
+
+int CoapPacket::parseCoapOptions(CoapOption *option, uint16_t *running_delta, uint8_t **buf, size_t buflen) {
     uint8_t *p = *buf;
     uint8_t headlen = 1;
     uint16_t len, delta;

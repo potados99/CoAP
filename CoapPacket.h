@@ -13,7 +13,7 @@
 
 class CoapPacket {
 private:
-    static int parseOption(CoapOption *option, uint16_t *running_delta, uint8_t **buf, size_t buflen);
+    static int      parseCoapOptions(CoapOption *option, uint16_t *running_delta, uint8_t **buf, size_t buflen);
     
 public:
     uint8_t         version = COAP_VERSION; /* 현재 1 */
@@ -47,6 +47,11 @@ public:
 
     // 패킷의 내용들을 통신용 버퍼에 전달합니다. 반환값은 패킷의 크기입니다.
     uint16_t        exportToBuffer(uint8_t *destBuffer, uint32_t bufferLen);
+    
+    // write version, token, tokenlen, type, message id, code
+    CoapPacket      makeResponsePair(COAP_TYPE type, COAP_RESPONSE_CODE responseCode, uint8_t *responseOptionBuffer);
+
+    String          getUriPath();
     
     // 버퍼로부터 패킷을 파싱합니다.
     static bool     parseCoapPacket(CoapPacket &packet, uint8_t *buffer, uint32_t packetLen);
