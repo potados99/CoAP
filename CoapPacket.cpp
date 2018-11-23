@@ -43,7 +43,7 @@ CoapPacket::CoapPacket(IPAddress senderIP,
     this->optionnum    = 0;
     this->messageid    = rand();
     
-    // 호스트(발신자) 옵션 추가
+    // add option: host address
     String ipaddress = "";
     ipaddress += String(senderIP[0]);
     ipaddress += String(".");
@@ -58,7 +58,7 @@ CoapPacket::CoapPacket(IPAddress senderIP,
     this->options[this->optionnum].number = COAP_URI_HOST;
     this->optionnum ++;
     
-    // URI 옵션 추가
+    // add option: URI
     int idx = 0;
     for (int i = 0; i < strlen(url); i++) {
         if (url[i] == '/') {
@@ -78,13 +78,12 @@ CoapPacket::CoapPacket(IPAddress senderIP,
     }
 }
 
-// 완성
 uint16_t CoapPacket::exportToBuffer(uint8_t *destBuffer, uint32_t bufferLen) {
     uint8_t *bufPtr = destBuffer;
     uint16_t running_delta = 0;
     uint16_t packetSize = 0;
     
-    // 패킷 베이스 헤더를 만듭니다.
+    // make base header
     *bufPtr          = this->version << 6;
     *bufPtr          |= (this->type & 0x03) << 4;
     *bufPtr++        |= (this->tokenlen & 0x0F);
@@ -94,22 +93,20 @@ uint16_t CoapPacket::exportToBuffer(uint8_t *destBuffer, uint32_t bufferLen) {
     bufPtr           = destBuffer + COAP_HEADER_SIZE;
     packetSize       += 4; /* bytes */
     
-    // 토큰을 만듭니다.
+    // make token
     if (this->token != NULL && this->tokenlen <= 0x0F) {
         memcpy(bufPtr, this->token, this->tokenlen);
         bufPtr += this->tokenlen;
         packetSize += this->tokenlen;
     }
     
-    // 옵션 헤더를 만듭니다.
+    // make option header
     for (int i = 0; i < this->optionnum; i++)  {
         uint32_t optdelta = 0;
         uint8_t len = 0;
         uint8_t delta = 0;
         
-        if (packetSize + 5 + this->options[i].length >= bufferLen) {
-            return 0;
-        }
+        if (packetSize + 5 + this->options[i].length >= bufferLen) { return 0; }
         
         optdelta = this->options[i].number - running_delta;
         COAP_OPTION_DELTA(optdelta, &delta);
@@ -142,12 +139,9 @@ uint16_t CoapPacket::exportToBuffer(uint8_t *destBuffer, uint32_t bufferLen) {
         running_delta = this->options[i].number;
     }
     
-    // 페이로드를 만듭니다.
-    if (this->payloadlen > 0) {
-        
-        if ((packetSize + 1 + this->payloadlen) >= bufferLen) {
-            return 0;
-        }
+    // maek payload
+    if (this->payload != NULL && this->payloadlen > 0) {
+        if ((packetSize + 1 + this->payloadlen) >= bufferLen) { return 0; }
         
         *bufPtr++ = 0xFF;
         memcpy(bufPtr, this->payload, this->payloadlen);
@@ -156,7 +150,6 @@ uint16_t CoapPacket::exportToBuffer(uint8_t *destBuffer, uint32_t bufferLen) {
     
     return packetSize;
 }
-
 
 CoapPacket CoapPacket::makeResponsePair(COAP_TYPE type, COAP_RESPONSE_CODE responseCode, uint8_t *responseOptionBuffer) {
     CoapPacket response;
@@ -212,12 +205,9 @@ String CoapPacket::getUriPath() {
 }
 
 bool CoapPacket::parseCoapPacket(CoapPacket &packet, uint8_t *buffer, uint32_t packetlen) {
-    // 기초 예외처리. 패킷이 헤더보다 작을 때
-    if (packetlen < COAP_HEADER_SIZE) {
-        return false;
-    }
+    // E: packet is smaller than header
+    if (packetlen < COAP_HEADER_SIZE) { return false; }
     
-    // 버퍼로부터 패킷에 대입.
     packet.version      = (buffer[0] & 0xC0) >> 6;
     packet.type         = (buffer[0] & 0x30) >> 4;
     packet.tokenlen     = buffer[0] & 0x0F;
@@ -225,73 +215,52 @@ bool CoapPacket::parseCoapPacket(CoapPacket &packet, uint8_t *buffer, uint32_t p
     packet.messageid    = 0xFF00 & (buffer[2] << 8);
     packet.messageid    |= 0x00FF & buffer[3];
     
+    // E: version does not match
+    if (packet.version != COAP_VERSION) { return false; }
     
-    /****************************************************************
-     * 대략 가져온 정보들로 예외처리하는 그룹
-     ****************************************************************/
+    // E: token length invalid
+    if (packet.tokenlen < 0 || packet.tokenlen > 8) { return false; }
     
-    // 버전 예외처리.
-    if (packet.version != COAP_VERSION) {
-        // 버전이 안 맞으면 새 패킷 가져오고 다음 루프로 점프
-        return false;
-    }
-    
-    // 토큰 예외처리.
-    if (packet.tokenlen < 0 || packet.tokenlen > 8) {
-        // 토큰 길이가 0 미만이거나 8 초과이면 새 패킷 가져오고 다음 루프로 점프.
-        return false;
-    }
-    
-    // 토큰 처리
-    if (packet.tokenlen == 0)  {
+    if (packet.tokenlen == 0) {
         packet.token = NULL;
     }
     else if (packet.tokenlen <= 8) {
         packet.token = buffer + COAP_HEADER_SIZE;
     }
     
-    // 패킷 사이즈 예외처리
-    if (COAP_HEADER_SIZE + packet.tokenlen >= packetlen) {
-        // 헤더에 토큰 길이만 더했는데 끝났을 때, 거른다.
-        return false;
-    }
+    // E: packet size is unexpectedly short
+    if (COAP_HEADER_SIZE + packet.tokenlen >= packetlen) { return false; }
     
-    // 옵션 다루기
+    // processing options
     int optionIndex = 0;
     uint16_t delta = 0;
-    uint8_t *end = buffer + packetlen; /* 버퍼의 끝 */
-    uint8_t *p = buffer + COAP_HEADER_SIZE + packet.tokenlen; /* 헤더와 토큰 지난 다음 */
+    uint8_t *end = buffer + packetlen; /* end of buffer */
+    uint8_t *p = buffer + COAP_HEADER_SIZE + packet.tokenlen; /* after header and token */
     
-    // 옵션의 수가 범위 내이고, p가 끝이 아니며 p의 값이 255가 아닐 때 반복!
+    // number of options is in range &&
+    // p is not end &&
+    // p is not 255
     while(optionIndex < MAX_OPTION_NUM && *p != 0xFF && p < end) {
-        //packet.options[optionIndex];
+        int parseResult = parseCoapOptions(&packet.options[optionIndex], &delta, &p, end-p);
+        if (parseResult != 0) { return false; }
         
-        // 옵션을 파싱하는데 리턴이 0이 아니면
-        if (parseCoapOptions(&packet.options[optionIndex], &delta, &p, end-p) != 0) {
-            // 가망이 없어 그냥 리턴시킨다.
-            return false;
-        }
-        
-        // 옵션 파싱이 성공이므로 인덱스를 하나 늘린다.
-        optionIndex++;
+        optionIndex ++;
     }
     
-    // 예외: 옵션이 너무 많아서 while문을 빠져나왔을 때
-    if (optionIndex >= MAX_OPTION_NUM) {
-        // 노답이다. 다시 가야 한다.
-        return false;
-    }
+    // broke while state because of optionIndex
+    if (optionIndex >= MAX_OPTION_NUM) { return false; }
     
-    // 모든 옵션을 파싱했으니 패킷의 옵션 수도 정해짐.
     packet.optionnum = optionIndex;
     
-    // p에 하나 더해도 끝이 아니고, p의 값이 255이면 (while문을 나와 예외처리에서 살아남으면, p가 마커(255)를 마주쳤거나 메시지가 끝난 두 경우 밖에 없다.)
+    // p + 1 is not end &&
+    // p is 255
+    //
+    // if survived from while loop and exception handling,
+    // there are only two cases, where p faced marker(255) or the packet is end.
     if (p+1 < end && *p == 0xFF) {
-        // 페이로드는 p+1부터 끝까지이다.
-        packet.payload = p+1;
-        packet.payloadlen = end-(p+1);
+        packet.payload = p + 1;             /* payload is from p + 1 to end. */
+        packet.payloadlen = end - (p + 1);
     } else {
-        // 그게 안되면 페이로드는 없다.
         packet.payload = NULL;
         packet.payloadlen= 0;
     }

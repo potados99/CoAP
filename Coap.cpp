@@ -46,7 +46,6 @@ bool Coap::loop() {
  * private
  ***************************************************************/
 
-// 완성
 uint16_t Coap::sendPacket(CoapPacket &packet, IPAddress ip, int port) {
     uint8_t buffer[BUF_MAX_SIZE];
     memset(buffer, 0, sizeof(buffer));

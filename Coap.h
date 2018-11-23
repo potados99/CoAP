@@ -22,13 +22,17 @@
  */
 
 /****************************************************************
- * Coap internal function call tree:
+ * Coap summarized internal function calls:
  
- loop()
+ [loop]                         -> everything starts. request packet buffer stays here.
     |
-    packetRecievedBehavior(CoapPacket &packet)
-        |
-        [User defined callback]
+ [packetRecievedBehavior]       -> reference of the request packet(on stack, in loop) is passed.
+    |
+ [User defined callback]        -> the packet is passed.
+    or
+ [private response functions]   -> using the packet, create and send response packet
+    |
+ [sendResponse]                 -> in user callback, create and send response packet
  
  ****************************************************************/
 
@@ -43,27 +47,27 @@ protected:
     CoapUri         uri; /* store resources */
     bool            started = false;
     
-    /****************************************************************
+    /**
      * Send a packet to specific host.
-     ****************************************************************/
-    uint16_t        sendPacket(CoapPacket &packet, IPAddress ip, int port = COAP_DEFAULT_PORT);
+     **/
+     uint16_t       sendPacket(CoapPacket &packet, IPAddress ip, int port = COAP_DEFAULT_PORT);
     
-    /****************************************************************
+    /**
      * Define a behavior when a complete packet arrives.
-     ****************************************************************/
+     **/
     virtual void    packetRecievedBehavior(CoapPacket &packet) = 0;
     
 public:
     Coap(UDP &udp);
     
-    /****************************************************************
+    /**
      * Start udp communication.
-     ****************************************************************/
+     **/
     void            start(int port = COAP_DEFAULT_PORT);
     
-    /****************************************************************
+    /**
      * Define repeated tasks.
-     ****************************************************************/
+     **/
     bool            loop();
 };
 

@@ -13,6 +13,9 @@
 
 class CoapPacket {
 private:
+    /**
+     * Parse options from buffer.
+     **/
     static int      parseCoapOptions(CoapOption *option, uint16_t *running_delta, uint8_t **buf, size_t buflen);
     
 public:
@@ -27,15 +30,8 @@ public:
     uint8_t         optionnum;
     CoapOption      options[MAX_OPTION_NUM];
     
-    
-    /****************************************************************
-     * CoapPacket 생성자 그룹
-     ****************************************************************/
-    
-    // 인자가 없는 생성자.
     CoapPacket();
     
-    // 인자들로부터 패킷을 생성합니다.
     CoapPacket(IPAddress senderIp,
                char *url,
                COAP_TYPE type,
@@ -45,15 +41,25 @@ public:
                uint8_t *payload,
                uint32_t payloadlen);
 
-    // 패킷의 내용들을 통신용 버퍼에 전달합니다. 반환값은 패킷의 크기입니다.
+    /**
+     * Serialize packet to buffer.
+     **/
     uint16_t        exportToBuffer(uint8_t *destBuffer, uint32_t bufferLen);
     
-    // write version, token, tokenlen, type, message id, code
+    /**
+     * Create a packet for response.
+     * The packet contains version, type, code, token(and len), message id, options(and len).
+     **/
     CoapPacket      makeResponsePair(COAP_TYPE type, COAP_RESPONSE_CODE responseCode, uint8_t *responseOptionBuffer);
 
+    /**
+     * Get URI path from packet.
+     **/
     String          getUriPath();
     
-    // 버퍼로부터 패킷을 파싱합니다.
+    /**
+     * Parse Packet from buffer.
+     **/
     static bool     parseCoapPacket(CoapPacket &packet, uint8_t *buffer, uint32_t packetLen);
 };
 

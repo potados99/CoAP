@@ -13,11 +13,14 @@
 
 class CoapClient : public Coap {
 private:
-    callback        responseCallback; /* client side single callback */
+    /**
+     * client side single callback
+     **/
+    callback        responseCallback;
     
-    /****************************************************************
+    /**
      * Launch callback when available.
-     ****************************************************************/
+     **/
     bool            launchCallback(CoapPacket &packet, IPAddress ip, int port);
 
     virtual void    packetRecievedBehavior(CoapPacket &packet);
@@ -25,25 +28,25 @@ private:
 public:
     CoapClient(UDP &udp);
     
-    /****************************************************************
+    /**
      * Register an end-to-end single callback.
-     ****************************************************************/
+     **/
     bool            response(callback c);
     
-    /****************************************************************
+    /**
      * Send a GET method.
-     ****************************************************************/
+     **/
     uint16_t        get(IPAddress ip, int port, char *url);
 
-    /****************************************************************
+    /**
      * Send a PUT method.
-     ****************************************************************/
+     **/
     uint16_t        put(IPAddress ip, int port, char *url, char *payload);
     
-    /****************************************************************
+    /**
      * Create and send a packet. Methods above are implemented on it.
      * Returns message id.
-     ****************************************************************/
+     **/
     uint16_t        send(IPAddress ip, int port, char *url,
                          COAP_TYPE type,
                          COAP_METHOD method,

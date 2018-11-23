@@ -49,10 +49,8 @@ uint16_t CoapClient::send(IPAddress ip, int port, char *url,
                     uint8_t *payload,
                     uint32_t payloadlen) {
     
-    // create packet
     CoapPacket packet(ip, url, type, method, token, tokenlen, payload, payloadlen);
     
-    // send packet
     return this->sendPacket(packet, ip, port); /* returns message id */
 }
 
