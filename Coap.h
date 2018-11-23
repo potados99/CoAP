@@ -21,6 +21,18 @@
  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+/**
+ * 2018.11.23
+ * Separate CoapServer and CoapClient.
+ * Remove duplicated code.
+ * Reorganize files and sources.
+ * Add comments.
+ *
+ * Song Byeong Jun
+ * potados99@gmail.com
+ *
+ **/
+
 /****************************************************************
  * Coap summarized internal function calls:
  
