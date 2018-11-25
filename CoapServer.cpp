@@ -82,10 +82,18 @@ void CoapServer::packetRecievedBehavior(CoapPacket &packet) {
         callback foundCallback = uri.find(url);
         
         if (foundCallback) {
-            foundCallback(request,this->udp->remoteIP(),this->udp->remotePort());
+            char *response = foundCallback(request,
+                                           this->udp->remoteIP(),
+                                           this->udp->remotePort());
+            sendResponse(request,
+                         this->udp->remoteIP(),
+                         this->udp->remotePort(),
+                         response);
         }
         else {
-            sendResourceNotFoundResponse(request, this->udp->remoteIP(), this->udp->remotePort());
+            sendResourceNotFoundResponse(request,
+                                         this->udp->remoteIP(),
+                                         this->udp->remotePort());
         }
     }
 }
