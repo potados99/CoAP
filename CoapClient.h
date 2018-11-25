@@ -17,7 +17,7 @@ private:
      * client side single callback
      **/
     callback        responseCallback;
-    
+
     /**
      * Launch callback when available.
      **/
@@ -27,12 +27,12 @@ private:
 
 public:
     CoapClient(UDP &udp);
-    
+
     /**
      * Register an end-to-end single callback.
      **/
-    bool            response(callback c);
-    
+    bool            registerCallback(callback c);
+
     /**
      * Send a GET method.
      **/
@@ -42,7 +42,7 @@ public:
      * Send a PUT method.
      **/
     uint16_t        put(IPAddress ip, int port, char *url, char *payload);
-    
+
     /**
      * Create and send a packet. Methods above are implemented on it.
      * Returns message id.

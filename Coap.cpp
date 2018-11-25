@@ -17,27 +17,27 @@ void Coap::start(int port) {
 
 bool Coap::loop() {
     if (! started) { return false; }
-    
+
     uint8_t     buffer[BUF_MAX_SIZE];   /* buffer to store udp packet */
     CoapPacket  packet;                 /* coap packet */
     int32_t     packetSize;             /* udp packet size */
-    
+
     if ((packetSize = this->udp->parsePacket())) {          /* when something is available */
         if (packetSize > BUF_MAX_SIZE) { return false; }    /* E: too big */
-        
+
         memset(buffer, 0, sizeof(buffer));                  /* clear buffer */
         this->udp->read(buffer, packetSize);                /* read */
-        
+
         // PARSE!
         bool success = CoapPacket::parseCoapPacket(packet, buffer, packetSize);
         if (! success) { return false; }                    /* E: packet invalid */
-        
+
         // packet recieved behavior
         this->packetRecievedBehavior(packet);
 
         return true;                                        /* all done well */
     }
-    
+
     return true;                                            /* nothing to parse */
 }
 
@@ -49,14 +49,12 @@ bool Coap::loop() {
 uint16_t Coap::sendPacket(CoapPacket &packet, IPAddress ip, int port) {
     uint8_t buffer[BUF_MAX_SIZE];
     memset(buffer, 0, sizeof(buffer));
-    
+
     uint16_t packetSize = packet.exportToBuffer(buffer, BUF_MAX_SIZE);
-    
+
     this->udp->beginPacket(ip, port);
     this->udp->write(buffer, packetSize);
     this->udp->endPacket();
-    
+
     return packet.messageid;
 }
-
-

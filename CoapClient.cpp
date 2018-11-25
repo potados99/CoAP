@@ -14,10 +14,10 @@
 
 CoapClient::CoapClient(UDP &udp) : Coap(udp) { }
 
-bool CoapClient::response(callback c) {
+bool CoapClient::registerCallback(callback c) {
     if (c) { responseCallback = c; }
     else { return false; }
-    
+
     return true;
 }
 
@@ -48,9 +48,9 @@ uint16_t CoapClient::send(IPAddress ip, int port, char *url,
                     uint8_t tokenlen,
                     uint8_t *payload,
                     uint32_t payloadlen) {
-    
+
     CoapPacket packet(ip, url, type, method, token, tokenlen, payload, payloadlen);
-    
+
     return this->sendPacket(packet, ip, port); /* returns message id */
 }
 
@@ -62,7 +62,7 @@ uint16_t CoapClient::send(IPAddress ip, int port, char *url,
 bool CoapClient::launchCallback(CoapPacket &packet, IPAddress ip, int port) {
     if (responseCallback) { responseCallback(packet, ip, port); }
     else { return false; }
-    
+
     return true;
  }
 
@@ -71,4 +71,3 @@ void CoapClient::packetRecievedBehavior(CoapPacket &packet) {
         launchCallback(packet, udp->remoteIP(), udp->remotePort());
     }
 }
-

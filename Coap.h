@@ -9,7 +9,7 @@
  distribute, sublicense, and/or sell copies of the Software, and to
  permit persons to whom the Software is furnished to do so, subject to
  the following conditions:
- 
+
  The above copyright notice and this permission notice shall be
  included in all copies or substantial portions of the Software.
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
@@ -35,7 +35,7 @@
 
 /****************************************************************
  * Coap summarized internal function calls:
- 
+
  [loop]                         -> everything starts. request packet buffer stays here.
     |
  [packetRecievedBehavior]       -> reference of the request packet(on stack, in loop) is passed.
@@ -45,7 +45,7 @@
  [private response functions]   -> using the packet, create and send response packet
     |
  [sendResponse]                 -> in user callback, create and send response packet
- 
+
  ****************************************************************/
 
 #ifndef Coap_h
@@ -58,7 +58,7 @@ protected:
     UDP             *udp; /* udp communication */
     CoapUri         uri; /* store resources */
     bool            started = false;
-    
+
     /**
      * Send a packet to specific host.
      **/
@@ -68,15 +68,15 @@ protected:
      * Define a behavior when a complete packet arrives.
      **/
     virtual void    packetRecievedBehavior(CoapPacket &packet) = 0;
-    
+
 public:
     Coap(UDP &udp);
-    
+
     /**
      * Start udp communication.
      **/
     void            start(int port = COAP_DEFAULT_PORT);
-    
+
     /**
      * Define repeated tasks.
      **/
@@ -84,4 +84,3 @@ public:
 };
 
 #endif /* Coap_h */
-
