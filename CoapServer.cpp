@@ -25,7 +25,6 @@ uint16_t CoapServer::sendResponse(CoapPacket &request, IPAddress ip, int port, c
     COAP_RESPONSE_CODE respCode;
     COAP_TYPE type;
     
-    const char *load = NULL;
     uint8_t optionBuffer[2];
     memset(optionBuffer, 0, sizeof(optionBuffer));
     
@@ -44,12 +43,10 @@ uint16_t CoapServer::sendResponse(CoapPacket &request, IPAddress ip, int port, c
     
     switch (request.code) {
         case COAP_GET:
-            load = payload;
             respCode = COAP_CONTENT;
             break;
             
         case COAP_PUT:
-            load = String("PUT OK").c_str();
             respCode = COAP_CHANGED;
             break;
             
@@ -59,8 +56,8 @@ uint16_t CoapServer::sendResponse(CoapPacket &request, IPAddress ip, int port, c
     
     CoapPacket response = request.makeResponsePair(type, respCode, optionBuffer);
     
-    response.payload = (uint8_t *)load;
-    response.payloadlen = strlen(load);
+    response.payload = (uint8_t *)payload;
+    response.payloadlen = strlen(payload);
     
     return this->sendPacket(response, ip, port); /* returns message id */
 }
