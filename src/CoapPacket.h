@@ -16,7 +16,7 @@ private:
     /**
      * Parse options from buffer.
      **/
-    static int      parseCoapOptions(CoapOption *option, uint16_t *running_delta, uint8_t **buf, size_t buflen);
+    int      parseCoapOptions(CoapOption *option, uint16_t *running_delta, uint8_t **buf, size_t buflen);
 
 public:
     uint8_t         version = COAP_VERSION; /* 현재 1 */
@@ -60,7 +60,7 @@ public:
     /**
      * Parse Packet from buffer.
      **/
-    static bool     parseCoapPacket(CoapPacket &packet, uint8_t *buffer, uint32_t packetLen);
+    bool     importFromBuffer(uint8_t *buffer, uint32_t packetSize);
 };
 
 #endif /* CoapPacket_h */

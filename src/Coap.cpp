@@ -29,7 +29,7 @@ bool Coap::loop() {
         this->udp->read(buffer, packetSize);                /* read */
 
         // PARSE!
-        bool success = CoapPacket::parseCoapPacket(packet, buffer, packetSize);
+        bool success = packet.importFromBuffer(buffer, packetSize);
         if (! success) { return false; }                    /* E: packet invalid */
 
         // packet recieved behavior

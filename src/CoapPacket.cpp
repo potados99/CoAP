@@ -139,7 +139,7 @@ uint16_t CoapPacket::exportToBuffer(uint8_t *destBuffer, uint32_t bufferLen) {
         running_delta = this->options[i].number;
     }
 
-    // maek payload
+    // make payload
     if (this->payload != NULL && this->payloadlen > 0) {
         if ((packetSize + 1 + this->payloadlen) >= bufferLen) { return 0; }
 
@@ -204,44 +204,44 @@ String CoapPacket::getUriPath() {
     return url;
 }
 
-bool CoapPacket::parseCoapPacket(CoapPacket &packet, uint8_t *buffer, uint32_t packetlen) {
+bool CoapPacket::importFromBuffer(uint8_t *buffer, uint32_t packetSize) {
     // E: packet is smaller than header
-    if (packetlen < COAP_HEADER_SIZE) { return false; }
+    if (packetSize < COAP_HEADER_SIZE) { return false; }
 
-    packet.version      = (buffer[0] & 0xC0) >> 6;
-    packet.type         = (buffer[0] & 0x30) >> 4;
-    packet.tokenlen     = buffer[0] & 0x0F;
-    packet.code         = buffer[1];
-    packet.messageid    = 0xFF00 & (buffer[2] << 8);
-    packet.messageid    |= 0x00FF & buffer[3];
+    this->version      = (buffer[0] & 0xC0) >> 6;
+    this->type         = (buffer[0] & 0x30) >> 4;
+    this->tokenlen     = buffer[0] & 0x0F;
+    this->code         = buffer[1];
+    this->messageid    = 0xFF00 & (buffer[2] << 8);
+    this->messageid    |= 0x00FF & buffer[3];
 
     // E: version does not match
-    if (packet.version != COAP_VERSION) { return false; }
+    if (this->version != COAP_VERSION) { return false; }
 
     // E: token length invalid
-    if (packet.tokenlen < 0 || packet.tokenlen > 8) { return false; }
+    if (this->tokenlen < 0 || this->tokenlen > 8) { return false; }
 
-    if (packet.tokenlen == 0) {
-        packet.token = NULL;
+    if (this->tokenlen == 0) {
+        this->token = NULL;
     }
-    else if (packet.tokenlen <= 8) {
-        packet.token = buffer + COAP_HEADER_SIZE;
+    else if (this->tokenlen <= 8) {
+        this->token = buffer + COAP_HEADER_SIZE;
     }
 
     // E: packet size is unexpectedly short
-    if (COAP_HEADER_SIZE + packet.tokenlen >= packetlen) { return false; }
+    if (COAP_HEADER_SIZE + this->tokenlen >= packetSize) { return false; }
 
     // processing options
     int optionIndex = 0;
     uint16_t delta = 0;
-    uint8_t *end = buffer + packetlen; /* end of buffer */
-    uint8_t *p = buffer + COAP_HEADER_SIZE + packet.tokenlen; /* after header and token */
+    uint8_t *end = buffer + packetSize; /* end of buffer */
+    uint8_t *p = buffer + COAP_HEADER_SIZE + this->tokenlen; /* after header and token */
 
     // number of options is in range &&
     // p is not end &&
     // p is not 255
     while(optionIndex < MAX_OPTION_NUM && *p != 0xFF && p < end) {
-        int parseResult = parseCoapOptions(&packet.options[optionIndex], &delta, &p, end-p);
+        int parseResult = parseCoapOptions(&this->options[optionIndex], &delta, &p, end-p);
         if (parseResult != 0) { return false; }
 
         optionIndex ++;
@@ -250,7 +250,7 @@ bool CoapPacket::parseCoapPacket(CoapPacket &packet, uint8_t *buffer, uint32_t p
     // broke while state because of optionIndex
     if (optionIndex >= MAX_OPTION_NUM) { return false; }
 
-    packet.optionnum = optionIndex;
+    this->optionnum = optionIndex;
 
     // p + 1 is not end &&
     // p is 255
@@ -258,11 +258,11 @@ bool CoapPacket::parseCoapPacket(CoapPacket &packet, uint8_t *buffer, uint32_t p
     // if survived from while loop and exception handling,
     // there are only two cases, where p faced marker(255) or the packet is end.
     if (p+1 < end && *p == 0xFF) {
-        packet.payload = p + 1;             /* payload is from p + 1 to end. */
-        packet.payloadlen = end - (p + 1);
+        this->payload = p + 1;             /* payload is from p + 1 to end. */
+        this->payloadlen = end - (p + 1);
     } else {
-        packet.payload = NULL;
-        packet.payloadlen= 0;
+        this->payload = NULL;
+        this->payloadlen= 0;
     }
 
     return true;
