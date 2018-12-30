@@ -129,6 +129,6 @@ uint16_t CoapServer::sendEmptyResponse(CoapPacket &request, IPAddress ip, int po
     response.payload = NULL;
     response.payloadlen = 0;
     
-    return this->sendPacket(response, this->udp->remoteIP(), this->udp->remotePort());
+    return this->sendPacket(response, ip, port);
 }
 
