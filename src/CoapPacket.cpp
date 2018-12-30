@@ -179,24 +179,25 @@ String CoapPacket::getUriPath() {
     String url = "";
 
     for (int i = 0; i < this->optionnum; i++) {
-        // 옵션을 하나씩 뒤지면서
+        // iterate through options
         if (this->options[i].number == COAP_URI_PATH && this->options[i].length > 0) {
-            // 옵션이 URI_PATH이고 그 옵션 길이가 0보다 클 때
-            // 그 옵션 길이보다 1 큰 배열을 만들어줌.
+            // when found URI_PATH,
+            // create an array to store that
             char urlname[this->options[i].length + 1];
 
-            // 그 크기만큼 옵션 버퍼에서 배열로 복사해줌.
+            // copy from option buffer to urlname array
             memcpy(urlname, this->options[i].buffer, this->options[i].length);
 
-            // 마지막은 NULL terminate 시켜줌.
-            urlname[this->options[i].length] = NULL;
+            // last character is '\0'.
+            urlname[this->options[i].length] = '\0';
 
-            // 찾은 url이 처음이면 넘어가고, 다음부터는 / 붙인다.
+            // if the found one is the only one, pass this statement
+	    // else, add slash
             if(url.length() > 0) {
                 url += "/";
             }
 
-            // url에 붙여준다.
+            // attach the array to url string
             url += urlname;
         }
     }
@@ -219,7 +220,8 @@ bool CoapPacket::importFromBuffer(uint8_t *buffer, uint32_t packetSize) {
     if (this->version != COAP_VERSION) { return false; }
 
     // E: token length invalid
-    if (this->tokenlen < 0 || this->tokenlen > 8) { return false; }
+    if (this->tokenlen > 8) { return false; }
+    // **unsigned 8-bit integer cannot be under zero.
 
     if (this->tokenlen == 0) {
         this->token = NULL;
