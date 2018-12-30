@@ -9,7 +9,7 @@
 #ifndef CoapServer_h
 #define CoapServer_h
 
-#include "src/Coap.h"
+#include "Coap.h"
 
 class CoapServer : public Coap {
 private:
