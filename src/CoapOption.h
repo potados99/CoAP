@@ -1,8 +1,8 @@
 //
-//  CoapOption.hpp
-//  ESP-CoAP-Test
+//  CoapOption.h
+//  CoAP-simple-library
 //
-//  Created by POTADOS on 18/11/2018.
+//  Created by POTADOS on 21/11/2018.
 //  Copyright © 2018 POTADOS. All rights reserved.
 //
 

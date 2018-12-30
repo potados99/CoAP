@@ -1,6 +1,12 @@
-#include "Coap.h"
+//
+//  Coap.cpp
+//  CoAP-simple-library
+//
+//  Created by POTADOS on 21/11/2018.
+//  Copyright © 2018 POTADOS. All rights reserved.
+//
 
-#define LOGGING
+#include "Coap.h"
 
 /****************************************************************
  * public

@@ -1,6 +1,6 @@
 //
-//  includes.hpp
-//  ESP-CoAP-Test
+//  includes.h
+//  CoAP-simple-library
 //
 //  Created by POTADOS on 18/11/2018.
 //  Copyright © 2018 POTADOS. All rights reserved.
@@ -9,17 +9,17 @@
 /*
  * Including hierarchy:
  *
- *   main
+ *	CoapServer.h or CoapClient.h
  *      |
- *      Coap
- *         |
- *         CoapUri
- *               |
- *               CoapPacket
- *                        |
- *                        CoapOption
- *                                 |
- *                                 includes
+ *      Coap.h
+ *      |
+ *      CoapUri.h
+ *      |
+ *      CoapPacket.h
+ *	|
+ *      CoapOption.h
+ *      |
+ *      includes.h
  *
  */
 
@@ -29,7 +29,7 @@
 #include "Udp.h"
 #include "Arduino.h"
 
-
+// for test environments
 #ifdef ARDUINO_TEST
 #include <stdint.h>
 #include <stdio.h>

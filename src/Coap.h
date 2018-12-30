@@ -1,3 +1,11 @@
+//
+//  Coap.h
+//  CoAP-simple-library
+//
+//  Created by POTADOS on 21/11/2018.
+//  Copyright © 2018 POTADOS. All rights reserved.
+//
+
 /*
  CoAP library for Arduino.
  This software is released under the MIT License.
@@ -21,32 +29,47 @@
  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/**
+/*
+ * 2018.12.30
+ * Improve the way of passing string from user callback to system.
+ * Remove unnecessary codes in COAP_DELTA macro.
+ * Fix comiler warnings.
+
  * 2018.11.23
  * Separate CoapServer and CoapClient.
  * Remove duplicated code.
  * Reorganize files and sources.
  * Add comments.
- *
- * Song Byeong Jun
+
+ * Song Byeong Jun, Potados
  * potados99@gmail.com
- *
- **/
+ */
 
-/****************************************************************
- * Coap summarized internal function calls:
+/*************************************
+ * Design rules:
 
- [loop]                         -> everything starts. request packet buffer stays here.
-    |
- [packetRecievedBehavior]       -> reference of the request packet(on stack, in loop) is passed.
-    |
- [User defined callback]        -> the packet is passed.
-    or
- [private response functions]   -> using the packet, create and send response packet
-    |
- [sendResponse]                 -> in user callback, create and send response packet
+ - Make it readable.
+ - Make it reusable.
+ - Think in OOP.
 
- ****************************************************************/
+ - Wrap into functions.
+ - Minimize dynamic allocation.
+ - Do not miss compiler warnings.
+
+ *************************************/
+
+/***********************************************************************************************************************
+ * Coap summarized internal function calls (for example of server):
+
+ [loop]                         	-> everything starts. request packet buffer stays here.
+    |
+     - [packetRecievedBehavior]       	-> reference of the request packet(on stack, in loop) is passed.
+    	|
+ 	 - [User defined callback]      -> the packet is passed. the callback returns char pointer of allocated string.
+    	   |
+ 	   [sendResponse]               -> after user callback, create and send response packet, and free user string.
+
+ ***********************************************************************************************************************/
 
 #ifndef Coap_h
 #define Coap_h
@@ -55,8 +78,8 @@
 
 class Coap {
 protected:
-    UDP             *udp; /* udp communication */
-    CoapUri         uri; /* store resources */
+    UDP             *udp; 	/* udp communication */
+    CoapUri         uri; 	/* store resources */
     bool            started = false;
 
     /**

@@ -1,6 +1,6 @@
 //
-//  CoapPacket.hpp
-//  ESP-CoAP-Test
+//  CoapPacket.h
+//  CoAP-simple-library
 //
 //  Created by POTADOS on 18/11/2018.
 //  Copyright © 2018 POTADOS. All rights reserved.
@@ -19,7 +19,7 @@ private:
     int      parseCoapOptions(CoapOption *option, uint16_t *running_delta, uint8_t **buf, size_t buflen);
 
 public:
-    uint8_t         version = COAP_VERSION; /* 현재 1 */
+    uint8_t         version = COAP_VERSION; /* currently 1 */
     uint8_t         type;
     uint8_t         code;
     uint8_t         *token;
