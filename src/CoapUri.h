@@ -20,6 +20,7 @@ private:
 
 public:
     CoapUri();
+
     void        add(callback call, String url);
     callback    find(String url);
 };

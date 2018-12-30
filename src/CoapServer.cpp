@@ -66,8 +66,7 @@ uint16_t CoapServer::sendResponse(CoapPacket &request, IPAddress ip, int port, c
  * private
  ****************************************************************/
 
-void CoapServer::packetRecievedBehavior(CoapPacket &packet) {
-    CoapPacket &request = packet;
+void CoapServer::packetRecievedBehavior(CoapPacket &request) {
     CoapPacket response;
     
     String url = request.getUriPath();
@@ -80,21 +79,17 @@ void CoapServer::packetRecievedBehavior(CoapPacket &packet) {
     // GET, PUT methods
     else if (request.code == COAP_GET || request.code == COAP_PUT) {
         callback foundCallback = uri.find(url);
-        
+	IPAddress ip = this->udp->remoteIP();
+	int port = this->udp->remotePort();
+
         if (foundCallback) {
-            char *response = foundCallback(request,
-                                           this->udp->remoteIP(),
-                                           this->udp->remotePort());
-            sendResponse(request,
-                         this->udp->remoteIP(),
-                         this->udp->remotePort(),
-                         response);
+            char *reply = foundCallback(request, ip, port);
+            sendResponse(request, ip, port, reply);
+	    free(reply);
         }
         else {
-            sendResourceNotFoundResponse(request,
-                                         this->udp->remoteIP(),
-                                         this->udp->remotePort());
-        }
+            sendResourceNotFoundResponse(request, ip, port);
+	}
     }
 }
 

@@ -23,7 +23,7 @@ private:
      **/
     bool            launchCallback(CoapPacket &packet, IPAddress ip, int port);
 
-    virtual void    packetRecievedBehavior(CoapPacket &packet);
+    virtual void    packetRecievedBehavior(CoapPacket &request);
 
 public:
     CoapClient(UDP &udp);

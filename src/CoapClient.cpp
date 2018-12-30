@@ -66,8 +66,8 @@ bool CoapClient::launchCallback(CoapPacket &packet, IPAddress ip, int port) {
     return true;
  }
 
-void CoapClient::packetRecievedBehavior(CoapPacket &packet) {
-    if (packet.type == COAP_ACK || packet.type == COAP_RESET) {
-        launchCallback(packet, udp->remoteIP(), udp->remotePort());
+void CoapClient::packetRecievedBehavior(CoapPacket &request) {
+    if (request.type == COAP_ACK || request.type == COAP_RESET) {
+        launchCallback(request, udp->remoteIP(), udp->remotePort());
     }
 }

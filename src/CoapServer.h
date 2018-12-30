@@ -13,7 +13,7 @@
 
 class CoapServer : public Coap {
 private:
-    virtual void    packetRecievedBehavior(CoapPacket &packet);
+    virtual void    packetRecievedBehavior(CoapPacket &request);
 
     /**
      * Send a response that says the resource requested doesn't exist

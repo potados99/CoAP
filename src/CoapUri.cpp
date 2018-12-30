@@ -10,21 +10,21 @@
 
 CoapUri::CoapUri() {
     for (int i = 0; i < MAX_CALLBACK; i++) {
-        URIs[i] = "";
-        callbacks[i] = NULL;
+        this->URIs[i] = "";
+        this->callbacks[i] = NULL;
     }
 }
 
 void CoapUri::add(callback call, String url) {
     for (int i = 0; i < MAX_CALLBACK; i++)
-        if (callbacks[i] != NULL && URIs[i].equals(url)) {
-            callbacks[i] = call;
+        if (this->callbacks[i] != NULL && this->URIs[i].equals(url)) {
+            this->callbacks[i] = call;
             return;
         }
     for (int i = 0; i < MAX_CALLBACK; i++) {
-        if (callbacks[i] == NULL) {
-            callbacks[i] = call;
-            URIs[i] = url;
+        if (this->callbacks[i] == NULL) {
+            this->callbacks[i] = call;
+            this->URIs[i] = url;
             return;
         }
     }
@@ -32,8 +32,8 @@ void CoapUri::add(callback call, String url) {
 
 callback CoapUri::find(String url) {
     for (int i = 0; i < MAX_CALLBACK; i++) {
-        if (callbacks[i] != NULL && URIs[i].equals(url)) {
-            return callbacks[i];
+        if (this->callbacks[i] != NULL && this->URIs[i].equals(url)) {
+            return this->callbacks[i];
         }
     }
     return NULL;

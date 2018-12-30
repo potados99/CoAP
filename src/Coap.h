@@ -67,7 +67,7 @@ protected:
     /**
      * Define a behavior when a complete packet arrives.
      **/
-    virtual void    packetRecievedBehavior(CoapPacket &packet) = 0;
+    virtual void    packetRecievedBehavior(CoapPacket &request) = 0;
 
 public:
     Coap(UDP &udp);

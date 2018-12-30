@@ -188,7 +188,7 @@ String CoapPacket::getUriPath() {
             // copy from option buffer to urlname array
             memcpy(urlname, this->options[i].buffer, this->options[i].length);
 
-            // last character is '\0'.
+            // last character must be '\0'.
             urlname[this->options[i].length] = '\0';
 
             // if the found one is the only one, pass this statement
