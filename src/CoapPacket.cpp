@@ -101,12 +101,12 @@ uint16_t CoapPacket::exportToBuffer(uint8_t *destBuffer, uint32_t bufferLen) {
     }
 
     // make option header
-    for (int i = 0; i < this->optionnum; i++)  {
+    for (uint8_t i = 0; i < this->optionnum; ++ i)  {
         uint32_t optdelta = 0;
         uint8_t len = 0;
         uint8_t delta = 0;
 
-        if (packetSize + 5 + this->options[i].length >= bufferLen) { return 0; }
+        if ((uint32_t)(packetSize + 5 + this->options[i].length) >= bufferLen) { return 0; }
 
         optdelta = this->options[i].number - running_delta;
         COAP_OPTION_DELTA(optdelta, &delta);
@@ -141,7 +141,7 @@ uint16_t CoapPacket::exportToBuffer(uint8_t *destBuffer, uint32_t bufferLen) {
 
     // make payload
     if (this->payload != NULL && this->payloadlen > 0) {
-        if ((packetSize + 1 + this->payloadlen) >= bufferLen) { return 0; }
+        if ((uint32_t)(packetSize + 1 + this->payloadlen) >= bufferLen) { return 0; }
 
         *bufPtr++ = 0xFF;
         memcpy(bufPtr, this->payload, this->payloadlen);
@@ -231,7 +231,7 @@ bool CoapPacket::importFromBuffer(uint8_t *buffer, uint32_t packetSize) {
     }
 
     // E: packet size is unexpectedly short
-    if (COAP_HEADER_SIZE + this->tokenlen >= packetSize) { return false; }
+    if ((uint32_t)(COAP_HEADER_SIZE + this->tokenlen) >= packetSize) { return false; }
 
     // processing options
     int optionIndex = 0;
