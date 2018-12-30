@@ -59,8 +59,8 @@ CoapPacket::CoapPacket(IPAddress senderIP,
     this->optionnum ++;
 
     // add option: URI
-    int idx = 0;
-    for (int i = 0; i < strlen(url); i++) {
+    size_t idx = 0;
+    for (size_t i = 0; i < strlen(url); i++) {
         if (url[i] == '/') {
             this->options[this->optionnum].buffer = (uint8_t *)(url + idx);
             this->options[this->optionnum].length = i - idx;
