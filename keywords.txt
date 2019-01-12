@@ -6,7 +6,7 @@
 # Datatypes (KEYWORD1)
 #######################################
 
-CoAPSimpleLibrary KEYWORD1
+libpcoap KEYWORD1
 CoapClient KEYWORD1
 CoapServer KEYWORD1
 
@@ -29,5 +29,5 @@ loop KEYWORD2
 # Constants (LITERAL1)
 #######################################
 
-COAP_PUT LITERAL1
 COAP_GET LITERAL1
+COAP_PUT LITERAL1
