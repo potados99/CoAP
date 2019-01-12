@@ -10,7 +10,7 @@ This library has two headers for use:
 - **CoapServer.h**
 - **CoapClient.h**.
 
-Using both server and client is neither tested nor recommanded. 
+Being both server and client is neither tested nor recommanded. 
 
 ## Implementation
 
