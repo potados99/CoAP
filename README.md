@@ -1,37 +1,60 @@
 # libpcoap
 
-CoAP implementation for Arduino and ESP8266.
+<a href="http://coap.technology/" target=_blank>CoAP</a> implementation for Arduino and ESP8266.
 
 The initial codes was forked from <a href="http://github.com/hirotakaster/CoAP-simple-library" target=_blank>hirotakaster/CoAP-simple-library</a>.
 
 ## Source Code
-This lightweight library source code are only 2 files. coap.cpp, coap.h.
+This library 
 
+
+## How To Use
+
+Clone <a href="http://github.com/potados99/libpcoap" target=_blank>this repository</a> to library path of arduino IDE.
+
+    cd $HOME/Documents/Arduino/libraries
+    git clone http://github.com/potados99/libpcoap
+   
 ## Example
-Some sample sketches for Arduino included(/examples/).
 
- - coaptest.ino : simple request/response sample.
- - coapserver.ino : server endpoint url callback sample.
+Here is CoAP server example on ESP8266.
 
-## How to use
-Download this source code branch zip file and extract to the Arduino libraries directory or checkout repository. Here is checkout on MacOS X.
+~~~C
+#include <ESP8266WiFi.h>
+#include <WiFiUdp.h>
+#include <CoapServer.h>
 
-    cd $HOME/Documents/Arduino/libraries/
-    git clone https://github.com/hirotakaster/CoAP-simple-library
-    # restart Arduino IDE, you can find CoAP-simple-library examples.
+WiFiUDP udp;
+CoapServer server(udp);
 
-In this exmples need CoAP server libcoap or microcoap server for check the example program. There is setting the libcoap on Ubuntu Linux. But if there don't use CoAP server(request/reseponse), following setting don't be needed.
+// WiFi information.
+const char *SSID = "****";
+const char *PASSWORD = "****";
 
-    git clone https://github.com/obgm/libcoap 
-    cd libcoap/
-    ./autogen.sh 
-    ./configure
-    make
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:.libs
-    gcc -o coap-server ./examples/coap-server.c -I./include -I. -L.libs -lcoap-1 -DWITH_POSIX
-    gcc -o coap-client ./examples/client.c ./examples/coap_list.c -I./include -I. -L.libs -lcoap-1 -DWITH_POSIX
-    ./coap-server
-    # next start Arduino and check the request/response.
+// Callback defines actions when data is recieved. 
+char *myCallback(CoapPacket &packet, IPAddress ip, int port);
 
-## Particle Photon, Core compatible
-This library is Particle Photon, Core compatible. That's version is <a href="https://github.com/hirotakaster/CoAP">here</a>.
+void setup() {
+  WiFi.begin(SSID, PASSWORD);
+  
+  // Add resource with callback and resource name.
+  server.addResource(myCallback, "device");
+  server.start();
+}
+
+void loop() {
+  server.loop();
+}
+
+char *myCallback(CoapPacket &packet, IPAddress ip, int port) {
+  const char * msg = (const char *)packet.payload ? (const char *)packet.payload : "NULL";
+  
+  // This string MUST be allocated dynamically. It will be freed after in loop.
+  char *reply = (char *)malloc(32); 
+  memset(reply, 0, 32);
+
+  sprintf(reply, "Recieved payload: [%s]", msg);
+
+  return reply;
+}
+~~~
