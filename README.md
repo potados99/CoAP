@@ -5,7 +5,10 @@
 The initial codes was forked from <a href="http://github.com/hirotakaster/CoAP-simple-library" target=_blank>hirotakaster/CoAP-simple-library</a>.
 
 ## Source Code
-This library has two headers for use: **CoapServer.h** and **CoapClient.h**.
+This library has two headers for use: 
+
+- **CoapServer.h**
+- **CoapClient.h**.
 
 Using both server and client is neither tested nor recommanded. 
 
