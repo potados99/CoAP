@@ -5,8 +5,17 @@
 The initial codes was forked from <a href="http://github.com/hirotakaster/CoAP-simple-library" target=_blank>hirotakaster/CoAP-simple-library</a>.
 
 ## Source Code
-This library 
+This library has two headers for use: **CoapServer.h** and **CoapClient.h**.
 
+Using both server and client is neither tested nor recommanded. 
+
+## Implementation
+
+This library implements only few parts of CoAP.
+
+`GET` and `PUT` methods are supported.
+
+*Observe* and *resource discovery* is not suppprted yet.
 
 ## How To Use
 
@@ -54,7 +63,8 @@ char *myCallback(CoapPacket &packet, IPAddress ip, int port) {
   memset(reply, 0, 32);
 
   sprintf(reply, "Recieved payload: [%s]", msg);
-
+  
+  // After return, reply is sent automatically.
   return reply;
 }
 ~~~
