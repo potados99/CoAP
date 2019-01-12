@@ -1,5 +1,5 @@
 # libpcoap
-###### Potados CoAP library ######
+###### Potados CoAP library. ######
 
 <a href="http://coap.technology/" target=_blank>CoAP</a> implementation for Arduino and ESP8266.
 
