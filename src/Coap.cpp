@@ -8,10 +8,6 @@
 
 #include "Coap.h"
 
-/****************************************************************
- * public
- ***************************************************************/
-
 Coap::Coap(UDP& udp) {
     this->udp = &udp;
 }
@@ -46,11 +42,6 @@ bool Coap::loop() {
 
     return true;                                            /* nothing to parse */
 }
-
-
-/****************************************************************
- * private
- ***************************************************************/
 
 uint16_t Coap::sendPacket(CoapPacket &packet, IPAddress ip, int port) {
     uint8_t buffer[BUF_MAX_SIZE];

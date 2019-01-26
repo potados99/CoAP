@@ -13,8 +13,19 @@
 
 class CoapOption {
 public:
+    /**
+     * Number of this option.
+     */
     uint8_t number;
+    
+    /**
+     * Length of this option.
+     */
     uint8_t length;
+    
+    /**
+     * Content of this option.
+     */
     uint8_t *buffer;
 };
 

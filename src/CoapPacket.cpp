@@ -8,10 +8,6 @@
 
 #include "CoapPacket.h"
 
-/****************************************************************
- * public
- ****************************************************************/
-
 CoapPacket::CoapPacket() {
     type = 0;
     code = 0;
@@ -244,7 +240,7 @@ bool CoapPacket::importFromBuffer(uint8_t *buffer, uint32_t packetSize) {
     // p is not 255
     while(optionIndex < MAX_OPTION_NUM && *p != 0xFF && p < end) {
         int parseResult = parseCoapOptions(&this->options[optionIndex], &delta, &p, end-p);
-        if (parseResult != 0) { return false; }
+        if (!parseResult) { return false; }
 
         optionIndex ++;
     }
@@ -270,50 +266,45 @@ bool CoapPacket::importFromBuffer(uint8_t *buffer, uint32_t packetSize) {
     return true;
 }
 
-
-/****************************************************************
- * private
- ****************************************************************/
-
-int CoapPacket::parseCoapOptions(CoapOption *option, uint16_t *running_delta, uint8_t **buf, size_t buflen) {
+bool CoapPacket::parseCoapOptions(CoapOption *option, uint16_t *running_delta, uint8_t **buf, size_t buflen) {
     uint8_t *p = *buf;
     uint8_t headlen = 1;
     uint16_t len, delta;
 
-    if (buflen < headlen) { return -1; }
+    if (buflen < headlen) { return false; }
 
     delta = (p[0] & 0xF0) >> 4;
     len = p[0] & 0x0F;
 
     if (delta == 13) {
         headlen += 1;
-        if (buflen < headlen) { return -1; }
+        if (buflen < headlen) { return false; }
         delta = p[1] + 13;
         p += 1;
     }
     else if (delta == 14) {
         headlen += 2;
-        if (buflen < headlen) { return -1; }
+        if (buflen < headlen) { return false; }
         delta = ((p[1] << 8) | p[2]) + 269;
         p += 2;
     }
-    else if (delta == 15) { return -1; }
+    else if (delta == 15) { return false; }
 
     if (len == 13) {
         headlen += 1;
-        if (buflen < headlen) { return -1; }
+        if (buflen < headlen) { return false; }
         len = p[1] + 13;
         p += 1;
     }
     else if (len == 14) {
         headlen += 2;
-        if (buflen < headlen) { return -1; }
+        if (buflen < headlen) { return false; }
         len = ((p[1] << 8) | p[2]) + 269;
         p += 2;
     }
-    else if (len == 15) { return -1; }
+    else if (len == 15) { return false; }
 
-    if ((p + 1 + len) > (*buf + buflen)) { return -1; }
+    if ((p + 1 + len) > (*buf + buflen)) { return false; }
 
     option->number = delta + (*running_delta);
     option->buffer = p + 1;
@@ -321,5 +312,5 @@ int CoapPacket::parseCoapOptions(CoapOption *option, uint16_t *running_delta, ui
     *buf = p + 1 + len;
     *running_delta += delta;
 
-    return 0;
+    return true;
 }

@@ -16,7 +16,7 @@
  *      CoapUri.h
  *      |
  *      CoapPacket.h
- *	|
+ *	    |
  *      CoapOption.h
  *      |
  *      includes.h
@@ -33,6 +33,7 @@
 #ifdef ARDUINO_TEST
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #endif
 
 #define MAX_CALLBACK 10
@@ -47,27 +48,6 @@
 
 #define RESPONSE_CODE(class, detail) ((class << 5) | (detail))
 #define COAP_OPTION_DELTA(v, n) (*n = (v < 13) ? (0xFF & v) : 13)
-
-// under is depracated.
-// #define COAP_OPTION_DELTA(v, n) (v < 13 ? (*n = (0xFF & v)) : (v <= 0xFF + 13 ? (*n = 13) : (*n = 14)))
-
-/*
-
-if (v < 13) {
-	*n = (0xFF & v);
-}
-else {
-	if (v <= 0xFF + 13) {
-		*n = 13;
-	}
-	else {
-		*n = 14;
-	}
-}
-
-*n = (v < 13) ? (0xFF & v) : 13;
-
-*/
 
 typedef enum {
     COAP_CON = 0,

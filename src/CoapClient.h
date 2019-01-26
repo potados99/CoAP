@@ -14,13 +14,19 @@
 class CoapClient : public Coap {
 private:
     /**
-     * client side single callback
-     **/
+     * Client side single callback.
+     */
     callback        responseCallback;
 
     /**
      * Launch callback when available.
-     **/
+     *
+     * @param packet        Incomming packet.
+     * @param ip            Sender IP.
+     * @param port          Sender port.
+     *
+     * @return          False when callback doesn't exist.
+     */
     bool            launchCallback(CoapPacket &packet, IPAddress ip, int port);
 
     virtual void    packetRecievedBehavior(CoapPacket &request);
@@ -30,22 +36,50 @@ public:
 
     /**
      * Register an end-to-end single callback.
-     **/
+     *
+     * @param c             Callback to register.
+     *
+     * @return              False when c is null.
+     */
     bool            registerCallback(callback c);
 
     /**
-     * Send a GET method.
-     **/
+     * Send a packet with GET method.
+     *
+     * @param ip            Receiver IP.
+     * @param port          Receiver port.
+     * @param url           Url of this client.
+     *
+     * @return              Message id of sent packet.
+     */
     uint16_t        get(IPAddress ip, int port, char *url);
 
     /**
-     * Send a PUT method.
-     **/
+     * Send a packet with PUT method.
+     *
+     * @param ip            Receiver IP.
+     * @param port          Receiver port.
+     * @param url           Url of this client.
+     *
+     * @return          Message id of sent packet.
+     */
     uint16_t        put(IPAddress ip, int port, char *url, char *payload);
 
     /**
      * Create and send a packet. Methods above are implemented on it.
      * Returns message id.
+     *
+     * @param ip            Receiver IP.
+     * @param port          Receiver port.
+     * @param url           Url of this client.
+     * @param type          Type of packet to send.
+     * @param method        Method to use.
+     * @param token         Token of packet.
+     * @param tokenlen      Length of token.
+     * @param payload       Payload to send.
+     * @param payloadlen    Length of payload.
+     *
+     * @return          Message id of sent packet.
      **/
     uint16_t        send(IPAddress ip, int port, char *url,
                          COAP_TYPE type,

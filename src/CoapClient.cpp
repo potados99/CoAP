@@ -8,10 +8,6 @@
 
 #include "CoapClient.h"
 
-/****************************************************************
- * public
- ****************************************************************/
-
 CoapClient::CoapClient(UDP &udp) : Coap(udp) { }
 
 bool CoapClient::registerCallback(callback c) {
@@ -53,11 +49,6 @@ uint16_t CoapClient::send(IPAddress ip, int port, char *url,
 
     return this->sendPacket(packet, ip, port); /* returns message id */
 }
-
-
-/****************************************************************
- * private
- ****************************************************************/
 
 bool CoapClient::launchCallback(CoapPacket &packet, IPAddress ip, int port) {
     if (responseCallback) { responseCallback(packet, ip, port); }

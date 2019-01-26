@@ -15,8 +15,15 @@ class CoapPacket {
 private:
     /**
      * Parse options from buffer.
-     **/
-    int      parseCoapOptions(CoapOption *option, uint16_t *running_delta, uint8_t **buf, size_t buflen);
+     *
+     * @param option                Parsed option data goes here.
+     * @param running_delta         Used when processing options.
+     * @param buf                   Buffer where data comes from.
+     * @param buflen                Length of buffer.
+     *
+     * @return                      False when failed parsing option.
+     */
+    bool            parseCoapOptions(CoapOption *option, uint16_t *running_delta, uint8_t **buf, size_t buflen);
 
 public:
     uint8_t         version = COAP_VERSION; /* currently 1 */
@@ -43,23 +50,39 @@ public:
 
     /**
      * Serialize packet to buffer.
-     **/
+     *
+     * @param destBuffer            Destination buffer.
+     * @param bufferLen             Length of buffer.
+     *
+     * @return                      Size of packet.
+     */
     uint16_t        exportToBuffer(uint8_t *destBuffer, uint32_t bufferLen);
 
     /**
      * Create a packet for response.
      * The packet contains version, type, code, token(and len), message id, options(and len).
-     **/
+     *
+     * @param type                  Type of response packet.
+     * @param responseCode          Response code.
+     * @param responseOptionBuffer  Option buffer to fill in.
+     *
+     * @return                      Created packet.
+     */
     CoapPacket      makeResponsePair(COAP_TYPE type, COAP_RESPONSE_CODE responseCode, uint8_t *responseOptionBuffer);
 
     /**
      * Get URI path from packet.
-     **/
+     */
     String          getUriPath();
 
     /**
      * Parse Packet from buffer.
-     **/
+     *
+     * @param buffer                Buffer containing serialized packet.
+     * @param packetSize            Size of packet to parse.
+     *
+     * @return                      False when packet is invalid.
+     */
     bool     importFromBuffer(uint8_t *buffer, uint32_t packetSize);
 };
 

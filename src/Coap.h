@@ -17,7 +17,7 @@
  distribute, sublicense, and/or sell copies of the Software, and to
  permit persons to whom the Software is furnished to do so, subject to
  the following conditions:
-
+ 
  The above copyright notice and this permission notice shall be
  included in all copies or substantial portions of the Software.
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
@@ -30,46 +30,24 @@
  */
 
 /*
+ * 2019.1.27
+ * Refine documents.
+ 
  * 2018.12.30
  * Improve the way of passing string from user callback to system.
  * Remove unnecessary codes in COAP_DELTA macro.
  * Fix comiler warnings.
-
+ 
  * 2018.11.23
  * Separate CoapServer and CoapClient.
  * Remove duplicated code.
  * Reorganize files and sources.
  * Add comments.
-
+ 
  * Song Byeong Jun, Potados
  * potados99@gmail.com
  */
 
-/*************************************
- * Design rules:
-
- - Make it readable.
- - Make it reusable.
- - Think in OOP.
-
- - Wrap into functions.
- - Minimize dynamic allocation.
- - Do not miss compiler warnings.
-
- *************************************/
-
-/***********************************************************************************************************************
- * Coap summarized internal function calls (for example of server):
-
- [loop]                         	-> everything starts. request packet buffer stays here.
-    |
-     - [packetRecievedBehavior]       	-> reference of the request packet(on stack, in loop) is passed.
-    	|
- 	 - [User defined callback]      -> the packet is passed. the callback returns char pointer of allocated string.
-    	   |
- 	   [sendResponse]               -> after user callback, create and send response packet, and free user string.
-
- ***********************************************************************************************************************/
 
 #ifndef Coap_h
 #define Coap_h
@@ -78,32 +56,61 @@
 
 class Coap {
 protected:
-    UDP             *udp; 	/* udp communication */
-    CoapUri         uri; 	/* store resources */
+    /**
+     * UDP communication.
+     */
+    UDP             *udp;
+    
+    /**
+     * Store resources.
+     */
+    CoapUri         uri;
+    
+    /**
+     * Flag: if this server started.
+     */
     bool            started = false;
-
+    
     /**
      * Send a packet to specific host.
-     **/
-     uint16_t       sendPacket(CoapPacket &packet, IPAddress ip, int port = COAP_DEFAULT_PORT);
-
+     *
+     * @param packet    Packet to send.
+     * @param ip        Receiver IP.
+     * @param port      Receiver port.
+     *
+     * @return          Message id of sent packet.
+     */
+    uint16_t       sendPacket(CoapPacket &packet, IPAddress ip, int port = COAP_DEFAULT_PORT);
+    
     /**
      * Define a behavior when a complete packet arrives.
-     **/
+     *
+     * @param request   incomming request packet.
+     */
     virtual void    packetRecievedBehavior(CoapPacket &request) = 0;
-
+    
 public:
+    /**
+     * Initialize instance.
+     *
+     * @param udp       Udp instance to use.
+     */
     Coap(UDP &udp);
-
+    
     /**
      * Start udp communication.
-     **/
+     *
+     * @param port      Port number of this server.
+     */
     void            start(int port = COAP_DEFAULT_PORT);
-
+    
     /**
      * Define repeated tasks.
-     **/
+     *
+     * @return          False when packet is too big or not valid.
+     */
     bool            loop();
 };
 
 #endif /* Coap_h */
+

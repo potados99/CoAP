@@ -11,6 +11,9 @@
 
 #include "CoapPacket.h"
 
+/**
+ * Type definition for coap callback.
+ */
 typedef char * (*callback)(CoapPacket &, IPAddress, int);
 
 class CoapUri {

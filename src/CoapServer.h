@@ -17,13 +17,25 @@ private:
 
     /**
      * Send a response that says the resource requested doesn't exist
-     **/
+     *
+     * @param request       Incomming packet.
+     * @param ip            Sender IP.
+     * @param port          Sender port.
+     *
+     * @return              Message id of sent packet.
+     */
     uint16_t        sendResourceNotFoundResponse(CoapPacket &request, IPAddress ip, int port);
     
     /**
      * Send an empty response.
      * Used when responding to a ping request.
-     **/
+     *
+     * @param request       Incomming packet.
+     * @param ip            Sender IP.
+     * @param port          Sender port.
+     *
+     * @return              Message id of sent packet.
+     */
     uint16_t        sendEmptyResponse(CoapPacket &request, IPAddress ip, int port);
     
 public:
@@ -31,13 +43,25 @@ public:
     
     /**
      * Add a resource and a callback for it.
-     **/
+     *
+     * @param c             Callback for resource.
+     * @param url           Resource url.
+     *
+     * @return              False when c or url is null.
+     */
     bool            addResource(callback c, String url);
     
     /**
-     * Send a general response.
+     * Send a general response with a payload.
      * Called in a user callback.
-     **/
+     *
+     * @param request       Incomming packet.
+     * @param ip            Sender IP.
+     * @param port          Sender port.
+     * @param payload       Payload to send.
+     *
+     * @return              Message id of sent packet.
+     */
     uint16_t        sendResponse(CoapPacket &request, IPAddress ip, int port, char *payload = NULL);
 };
 
