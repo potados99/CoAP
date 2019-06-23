@@ -85,7 +85,7 @@ void CoapServer::packetRecievedBehavior(CoapPacket &request) {
         if (foundCallback) {
 	    char reply[BUF_MAX_SIZE] = {0, };
 	    
-	    founcCallback(request.code, request.payload, reply);
+	    foundCallback(request.code, (const char *)request.payload, reply);
 	    sendResponse(request, ip, port, reply);
         }
         else {
