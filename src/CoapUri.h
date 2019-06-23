@@ -14,7 +14,7 @@
 /**
  * Type definition for coap callback.
  */
-typedef char * (*callback)(CoapPacket &, IPAddress, int);
+typedef void (*callback)(COAP_METHOD, const char *, char *); /* method, payload, reply */
 
 class CoapUri {
 private:

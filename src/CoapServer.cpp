@@ -83,9 +83,10 @@ void CoapServer::packetRecievedBehavior(CoapPacket &request) {
         int port = this->udp->remotePort();
 
         if (foundCallback) {
-            char *reply = foundCallback(request, ip, port);
-            sendResponse(request, ip, port, reply);
-            free(reply);
+	    char reply[BUF_MAX_SIZE] = {0, };
+	    
+	    founcCallback(request.code, request.payload, reply);
+	    sendResponse(request, ip, port, reply);
         }
         else {
             sendResourceNotFoundResponse(request, ip, port);
