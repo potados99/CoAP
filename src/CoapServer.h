@@ -44,12 +44,12 @@ public:
     /**
      * Add a resource and a callback for it.
      *
-     * @param c             Callback for resource.
      * @param url           Resource url.
+     * @param c             Callback for resource.
      *
      * @return              False when c or url is null.
      */
-    bool            addResource(callback c, String url);
+    bool            addResource(String url, callback c);
     
     /**
      * Send a general response with a payload.

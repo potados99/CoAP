@@ -14,7 +14,7 @@
 
 CoapServer::CoapServer(UDP &udp) : Coap(udp) { }
 
-bool CoapServer::addResource(callback c, String url) {
+bool CoapServer::addResource(String url, callback c) {
     if (c && url) { this->uri.add(c, url); }
     else { return false; }
 
