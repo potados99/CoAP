@@ -83,7 +83,7 @@ public:
      *
      * @return                      False when packet is invalid.
      */
-    bool     importFromBuffer(uint8_t *buffer, uint32_t packetSize);
+    bool            importFromBuffer(uint8_t *buffer, uint32_t packetSize);
 };
 
 #endif /* CoapPacket_h */

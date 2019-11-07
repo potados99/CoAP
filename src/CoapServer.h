@@ -25,7 +25,7 @@ private:
      * @return              Message id of sent packet.
      */
     uint16_t        sendResourceNotFoundResponse(CoapPacket &request, IPAddress ip, int port);
-    
+
     /**
      * Send an empty response.
      * Used when responding to a ping request.
@@ -37,10 +37,10 @@ private:
      * @return              Message id of sent packet.
      */
     uint16_t        sendEmptyResponse(CoapPacket &request, IPAddress ip, int port);
-    
+
 public:
     CoapServer(UDP &udp);
-    
+
     /**
      * Add a resource and a callback for it.
      *
@@ -50,7 +50,7 @@ public:
      * @return              False when c or url is null.
      */
     bool            addResource(String url, callback c);
-    
+
     /**
      * Send a general response with a payload.
      * Called in a user callback.

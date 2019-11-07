@@ -18,7 +18,7 @@ void Coap::start(int port) {
 }
 
 bool Coap::loop() {
-    if (! started) { return false; }
+    if (!started) { return false; }
 
     uint8_t     buffer[BUF_MAX_SIZE];   /* buffer to store udp packet */
     CoapPacket  packet;                 /* coap packet */
@@ -32,7 +32,7 @@ bool Coap::loop() {
 
         // PARSE!
         bool success = packet.importFromBuffer(buffer, packetSize);
-        if (! success) { return false; }                    /* E: packet invalid */
+        if (!success) { return false; }                     /* E: packet invalid */
 
         // packet recieved behavior
         this->packetRecievedBehavior(packet);
